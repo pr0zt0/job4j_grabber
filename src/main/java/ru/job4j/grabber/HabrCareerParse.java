@@ -10,8 +10,6 @@ import ru.job4j.grabber.utils.DateTimeParser;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-
 
 public class HabrCareerParse implements DateTimeParser {
     private static final String SOURCE_LINK = "http://career.habr.com";
