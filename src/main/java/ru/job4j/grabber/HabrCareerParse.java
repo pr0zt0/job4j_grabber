@@ -21,6 +21,13 @@ public class HabrCareerParse implements DateTimeParser {
         return LocalDateTime.parse(parser, DateTimeFormatter.ISO_DATE_TIME);
     }
 
+    private String retrieveDescription(String link) throws IOException {
+        Connection connection = Jsoup.connect(link);
+        Document document = connection.get();
+        Elements rows = document.select(".job_show_description__vacancy_description");
+        return rows.first().child(0).text();
+    }
+
     public static void main(String[] args) throws IOException {
         for (int i = 0; i < 5; i++) {
             pageLink = String.format("%s/vacancies/java_developer?page=%s", SOURCE_LINK, i);
