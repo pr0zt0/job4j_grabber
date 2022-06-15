@@ -7,17 +7,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.entity.Post;
 import ru.job4j.grabber.utils.DateTimeParser;
+import ru.job4j.grabber.utils.ISOParser;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class HabrCareerParse implements Parse {
     private static final String SOURCE_LINK = "http://career.habr.com";
-
-    private static String pageLink;
 
     private final DateTimeParser dateTimeParser;
 
@@ -32,10 +29,6 @@ public class HabrCareerParse implements Parse {
         }
         Elements rows = Objects.requireNonNull(document).select(".job_show_description__vacancy_description");
         return rows.first().child(0).text();
-    }
-
-    public DateTimeParser getDateTimeParser() {
-        return dateTimeParser;
     }
 
     public HabrCareerParse(DateTimeParser dateTimeParser) {
@@ -60,7 +53,7 @@ public class HabrCareerParse implements Parse {
                 posts.add(new Post(vacancyName,
                         linkLocal,
                         retrieveDescription(linkLocal),
-                        getDateTimeParser().parser(time)));
+                        dateTimeParser.parser(time)));
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,17 +61,11 @@ public class HabrCareerParse implements Parse {
         return posts;
     }
 
-
     public static void main(String[] args) {
         for (int i = 0; i < 5; i++) {
-            pageLink = String.format("%s/vacancies/java_developer?page=%s", SOURCE_LINK, i);
+            String pageLink = String.format("%s/vacancies/java_developer?page=%s", SOURCE_LINK, i);
 
-            new HabrCareerParse(new DateTimeParser() {
-                @Override
-                public LocalDateTime parser(String parser) {
-                    return DateTimeParser.super.parser(parser);
-                }
-            }).list(pageLink).forEach(System.out::println);
+            new HabrCareerParse(new ISOParser()).list(pageLink).forEach(System.out::println);
         }
     }
 }
