@@ -14,7 +14,12 @@ public class Post {
 
     private LocalDateTime created;
 
-    public Post() {
+    public Post(int id, String title, String link, String description, LocalDateTime created) {
+        this.id = id;
+        this.title = title;
+        this.link = link;
+        this.description = description;
+        this.created = created;
     }
 
     public Post(String title, String link, String description, LocalDateTime created) {
@@ -84,11 +89,11 @@ public class Post {
             return false;
         }
         Post post = (Post) o;
-        return link.equals(post.link);
+        return id == post.id && link.equals(post.link);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(link);
+        return Objects.hash(id, link);
     }
 }
