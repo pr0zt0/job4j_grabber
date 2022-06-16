@@ -13,7 +13,8 @@ create table "html_parser".post (
     , text_ text
     , link text
     , created timestamp
-    , constraint i_id_link primary key(id, link)
+    , constraint pk_post_id primary key(id)
+    , constraint u_post_link unique(link)
 );
 
 end$$;
