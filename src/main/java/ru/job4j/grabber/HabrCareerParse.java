@@ -16,6 +16,8 @@ import java.util.Objects;
 public class HabrCareerParse implements Parse {
     private static final String SOURCE_LINK = "http://career.habr.com";
 
+    private static final int COUNT_PAGE = 5;
+
     private final DateTimeParser dateTimeParser;
 
     private String retrieveDescription(String link) {
@@ -35,37 +37,36 @@ public class HabrCareerParse implements Parse {
         this.dateTimeParser = dateTimeParser;
     }
 
+    private Post getPost(Element el) {
+        Element titleElement = el.select(".vacancy-card__title").first();
+        Element linkElement = titleElement.child(0);
+        String time = el.select(".vacancy-card__date").first().child(0).attr("datetime");
+        String vacancyName = titleElement.text();
+        String linkLocal = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
+        return new Post(vacancyName,
+                linkLocal,
+                retrieveDescription(linkLocal),
+                dateTimeParser.parser(time));
+    }
+
     @Override
     public List<Post> list(String link) {
         List<Post> posts = new ArrayList<>();
-        Connection connection = Jsoup.connect(link);
-        try {
-            Document document = connection.get();
-            Elements rows = document.select(".vacancy-card__inner");
-
-            rows.forEach(row -> {
-                Element titleElement = row.select(".vacancy-card__title").first();
-                Element linkElement = titleElement.child(0);
-                String time = row.select(".vacancy-card__date").first().child(0).attr("datetime");
-                String vacancyName = titleElement.text();
-                String linkLocal = String.format("%s%s", SOURCE_LINK, linkElement.attr("href"));
-
-                posts.add(new Post(vacancyName,
-                        linkLocal,
-                        retrieveDescription(linkLocal),
-                        dateTimeParser.parser(time)));
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (int i = 0; i < COUNT_PAGE; i++) {
+            String pageLink = String.format("%s/vacancies/java_developer?page=%s", link, i);
+            Connection connection = Jsoup.connect(pageLink);
+            try {
+                Document document = connection.get();
+                Elements rows = document.select(".vacancy-card__inner");
+                rows.forEach(row -> posts.add(getPost(row)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return posts;
     }
 
     public static void main(String[] args) {
-        for (int i = 0; i < 5; i++) {
-            String pageLink = String.format("%s/vacancies/java_developer?page=%s", SOURCE_LINK, i);
-
-            new HabrCareerParse(new ISOParser()).list(pageLink).forEach(System.out::println);
-        }
+        new HabrCareerParse(new ISOParser()).list(SOURCE_LINK).forEach(System.out::println);
     }
 }
