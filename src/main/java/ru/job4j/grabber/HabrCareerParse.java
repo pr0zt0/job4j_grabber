@@ -52,7 +52,7 @@ public class HabrCareerParse implements Parse {
     @Override
     public List<Post> list(String link) {
         List<Post> posts = new ArrayList<>();
-        for (int i = 0; i < COUNT_PAGE; i++) {
+        for (int i = 1; i <= COUNT_PAGE; i++) {
             String pageLink = String.format("%s/vacancies/java_developer?page=%s", link, i);
             Connection connection = Jsoup.connect(pageLink);
             try {
