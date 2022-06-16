@@ -10,6 +10,16 @@ import java.util.Properties;
 public class PsqlStore implements Store, AutoCloseable {
     private final Connection cnn;
 
+    private Post getPostSQL(ResultSet rs) throws SQLException {
+        return new Post(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("text_"),
+                rs.getString("link"),
+                rs.getTimestamp("created").toLocalDateTime()
+        );
+    }
+
     public PsqlStore(Properties cfg) {
         try {
             Class.forName(cfg.getProperty("jdbc.driver"));
@@ -27,7 +37,8 @@ public class PsqlStore implements Store, AutoCloseable {
         try (PreparedStatement st = cnn.prepareStatement(
                 "insert into \"html_parser\".post"
                         + "(name, text_, link, created) "
-                        + "values(?, ?, ?, ?);"
+                        + "values(?, ?, ?, ?)"
+                        + "on conflict (link) do nothing;"
         )) {
             st.setString(1, post.getTitle());
             st.setString(2, post.getDescription());
@@ -45,13 +56,7 @@ public class PsqlStore implements Store, AutoCloseable {
         try (PreparedStatement st = cnn.prepareStatement("select * from \"html_parser\".post")) {
             try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    list.add(new Post(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("text_"),
-                            rs.getString("link"),
-                            rs.getTimestamp("created").toLocalDateTime()
-                    ));
+                    list.add(getPostSQL(rs));
                 }
             }
         } catch (Exception e) {
@@ -68,13 +73,7 @@ public class PsqlStore implements Store, AutoCloseable {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    post = new Post(
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("text_"),
-                            rs.getString("link"),
-                            rs.getTimestamp("created").toLocalDateTime()
-                    );
+                    post = getPostSQL(rs);
                 }
             }
         } catch (Exception e) {
