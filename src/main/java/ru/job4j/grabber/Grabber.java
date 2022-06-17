@@ -17,6 +17,8 @@ import static org.quartz.SimpleScheduleBuilder.simpleSchedule;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 public class Grabber implements Grab {
+    private static final String LINK = "http://career.habr.com";
+
     private final Properties cfg = new Properties();
 
     public Store store() {
@@ -60,8 +62,7 @@ public class Grabber implements Grab {
             JobDataMap map = context.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
-            String link = "http://career.habr.com";
-            List<Post> posts = parse.list(link);
+            List<Post> posts = parse.list(LINK);
             posts.forEach(store::save);
         }
     }
